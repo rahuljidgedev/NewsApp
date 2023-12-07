@@ -26,12 +26,12 @@ class NewsViewModel @Inject constructor(
                 "",
                 50,
                 0,
-                "Your-api-key"
+                "Your-News-Api-Key"
             )
 
             if(result.isSuccessful && result.body()!!.articles.isNotEmpty()){
-            _headlines.emit(result.body()!!.articles)
-        }
+                _headlines.emit(result.body()!!.articles)
+            }
         }
     }
 

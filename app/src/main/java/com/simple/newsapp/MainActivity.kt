@@ -4,9 +4,9 @@ import Article
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -14,9 +14,8 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -36,6 +35,7 @@ import coil.compose.AsyncImage
 import com.simple.newsapp.ui.theme.NewsAppTheme
 import com.simple.newsapp.viewmodels.NewsViewModel
 import dagger.hilt.android.AndroidEntryPoint
+import java.text.SimpleDateFormat
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
@@ -85,8 +85,6 @@ fun NewsMain(
             TodayHeadlines(list = headlines.value)
         }
     }
-
-
 }
 
 
@@ -100,48 +98,52 @@ fun TodayHeadlines(list: List<Article>) {
         ) {
         Spacer(modifier = Modifier.height(56.dp))
         LazyColumn {
-            items(list) { item ->
-                Card(
-                    colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.surfaceVariant,
-                    ),
+            items(list) { news ->
+                ElevatedCard (
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(bottom = 6.dp, end = 6.dp)
+                        .padding(vertical = 4.dp, horizontal = 8.dp),
                 ) {
-                    Column {
-                        Row (
+                    Column(
+                        modifier = Modifier.clickable {
+                            // Open news article in a new activity
+                            /*Intent(Intent.ACTION_VIEW, Uri.parse(news.url))
+                                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                                .startActivity(LocalContext.current)*/
+                        }
+                    ) {
+                        AsyncImage(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .height(100.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            AsyncImage(
-                                model = item.urlToImage,
-                                contentDescription = null,
-                            )
-                            Text(
-                                text = item.title ?: "",
-                                style = MaterialTheme.typography.titleMedium,
-                                modifier = Modifier.padding(start = 6.dp, top = 4.dp)
-                            )
-                        }
-                        if(!item.description.isNullOrEmpty())
-                            Text(
-                                text = item.description,
-                                style = MaterialTheme.typography.titleSmall,
-                                modifier = Modifier.padding(8.dp)
-                            )
-                        if(!item.content.isNullOrEmpty())
-                            Text(
-                                text = item.content,
-                                style = MaterialTheme.typography.bodyMedium,
-                                modifier = Modifier.padding(8.dp)
-                            )
+                                .height(200.dp),
+                            model = news.urlToImage,
+                            contentDescription = null
+                        )
+                        Text(
+                            text = news.title!!,
+                            style = MaterialTheme.typography.headlineSmall,
+                            modifier = Modifier.padding(8.dp)
+                        )
+                        Text(
+                            text = news.description!!,
+                            style = MaterialTheme.typography.bodyMedium,
+                            maxLines = 2,
+                            modifier = Modifier.padding(8.dp)
+                        )
+                        Text(
+                            text = "${news.source!!.name} - ${news.publishedAt.toFormattedDateString()}",
+                            style = MaterialTheme.typography.titleMedium,
+                            modifier = Modifier.padding(8.dp)
+                        )
                     }
                 }
             }
 
         }
     }
+}
+
+private fun String?.toFormattedDateString(): String {
+    val date = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'").parse(this)
+    return SimpleDateFormat("dd-MM-yyyy HH:mm a").format(date!!)
 }
